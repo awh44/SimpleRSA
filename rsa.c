@@ -3,52 +3,50 @@
 #include <math.h>
 #include <limits.h>
 
-#include "../ADT_List/ADT_List.h"
+#include "../BitVector/BitVector.h"
 
-
-#define MAX_NUM 1000000
-
-void apply_sieve(List *l, int max)
+//treat the BitVector as "backwards" - i.e., mark the composites as true, not the primes
+void apply_sieve(BitVector *bv, int max)
 {
-	Node *prime_node = FIRST(l);
-	while ((!IS_END(prime_node)) && (RETRIEVE(prime_node) * RETRIEVE(prime_node) < max))
+	int i;
+	for (i = 2; i * i <= max; i++)
 	{
-		int current_prime = RETRIEVE(prime_node);
-		Node *node = NEXT(prime_node);
-		while (!IS_END(node))
+		if (GET_BIT(bv, i - 2))
 		{
-			if (RETRIEVE(node) % current_prime == 0)
-			{
-				REMOVE(node);
-			}
-			else
-			{
-				node = NEXT(node);
-			}
+			continue;
 		}
-		prime_node = NEXT(prime_node);
+
+		int j;
+		for (j = i + i; j < max; j += i)
+		{
+			SET_BIT(bv, j - 2);
+		}
 	}
 }
 
 int main()
 {
-	//printf("Please enter an integer: ");
-	int n = MAX_NUM;
-	//scanf("%d", &n);
+	printf("Please enter an integer: ");
+	int n;
+	scanf("%d", &n);
 
-	List primes;
-	INITIALIZE(&primes);
+	BitVector primes;
+	INITIALIZE(&primes, n);
 
+	apply_sieve(&primes, n + 2);
+
+	int count = 0;
 	int i;
-	for (i = n; i > 1; i--)
+	for (i = 0; i < n; i++)
 	{
-		INSERT(i, FIRST(&primes));
+		if (!GET_BIT(&primes, i))
+		{
+			//printf("%d\n", i + 2);
+			count++;
+		}
 	}
+	printf("%d primes below %d\n", count, n + 2);
 
-	apply_sieve(&primes, n);
-	PRINTLIST(&primes);
-
-	FREE_LIST(&primes);
-
+	FREE_BITVECTOR(&primes);
 	return 0;
 }
